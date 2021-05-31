@@ -1,12 +1,12 @@
 # HyperVision
 
 Have you ever dreamed of using your *webcam* with [Hyperion](https://github.com/hyperion-project/hyperion.ng)
-to set up those Ambient LED strips for your monitor?
+to set up those Ambient LED strips for your TV/monitor?
 
 Did you scratch your head on how exactly to do that, given geometric distortions from the camera?
 
 Perhaps you even itched to put a camera with a [Fisheye lens](https://en.wikipedia.org/wiki/Fisheye_lens)
-right next to your TV, like in some
+right next to your monitor, like in some
 [commercial](https://us.govee.com/products/immersion-tv-backlights)
 [systems](https://ambivision.tv/) (but to do it better 😛)?
 
@@ -27,7 +27,9 @@ Well, here is a simple solution!
     pip3 install -r requirements.txt
     ```
 
-4.  Put your camera in front of the TV, but not overly close, so it could see the entire screen
+4.  Turn off the lights. Seriously, this really helps with calibration! Your monitor should be the brightest object in the room.
+
+5.  Put your camera in front of the monitor, but not overly close, so it could see the entire screen
     (for fisheye, don't place it right in front just yet). Then, run this script:
     ```
     python3 calibrate_camera.py
@@ -46,7 +48,7 @@ Well, here is a simple solution!
 
     See, that was easy so far!
 
-5.  Put the camera to its more permanent position - could be as close as several inches from the TV
+6.  Place the camera to its more permanent position - could be as close as several inches from the monitor
     (if you like to live on the edge with a fisheye 😛). Then, run:
     ```
     python3 calibrate_screen.py
@@ -62,7 +64,7 @@ Well, here is a simple solution!
 
     Hit Esc key if you want to cancel, or any other key to update Hyperion with your new settings!
 
-6.  That's it! PROFIT
+7.  That's it! PROFIT (and don't forget to turn on your lights...)
 
 ## Disclaimer
 
