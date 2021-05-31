@@ -1,0 +1,5 @@
+*.bak
+*.json
+*.jpeg
+*.jpg
+*.pyc
