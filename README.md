@@ -3,7 +3,7 @@
 Have you ever dreamed of using your *webcam* with [Hyperion](https://github.com/hyperion-project/hyperion.ng)
 to set up those Ambient LED strips for your TV/monitor?
 
-Did you scratch your head on how exactly to do that, given geometric distortions from the camera?
+Did you wonder how to do that, given geometric distortions from the camera?
 
 Perhaps you even itched to put a camera with a [Fisheye lens](https://en.wikipedia.org/wiki/Fisheye_lens)
 right next to your monitor, like in some
@@ -44,9 +44,7 @@ Well, here is a simple solution!
 
     ![Image of chessboard](images/chessboard.png)
 
-    If all goes well, the results will be stored in `params.json` file.
-
-    See, that was easy so far!
+    If all goes well, the results will be stored in `params.json` file. Easy so far!
 
 6.  Place the camera to its more permanent position - could be as close as several inches from the monitor
     (if you like to live on the edge with a fisheye 😛). Then, run:
