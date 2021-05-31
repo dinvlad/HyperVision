@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-from enum import Enum
-import json
 from secrets import randbelow
 from time import time
 from typing import Tuple
@@ -12,26 +10,24 @@ import numpy as np
 from screeninfo import Monitor, get_monitors
 
 from util import (
+    CameraModel,
+    CameraParams,
+    Hyperion,
     VideoCapture,
-    arg_pos_float,
-    arg_scale_float,
     arg_non_neg_int,
+    arg_pos_float,
     arg_pos_int,
+    arg_scale_float,
     imshow,
     show_preview,
 )
 
 
-class CameraModel(Enum):
-    PINHOLE = "pinhole"
-    FISHEYE = "fisheye"
-
-    def __str__(self):
-        return self.value
-
-
 def parse_args():
-    parser = argparse.ArgumentParser(description="Calibrate a camera")
+    parser = argparse.ArgumentParser(
+        description="Measure intrinsic and distortion coefficients for a camera.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
     parser.add_argument(
         "-br",
         "--board-rows",
@@ -159,6 +155,13 @@ def parse_args():
         default="params.json",
         help="Path to the JSON file for storing the output parameters",
     )
+    parser.add_argument(
+        "-ha",
+        "--hyperion-api",
+        type=str,
+        default="http://localhost:8090/json-rpc",
+        help="URL of Hyperion HTTP/S JSON API",
+    )
     return parser.parse_args()
 
 
@@ -198,7 +201,7 @@ def get_board_img(mon: Monitor, board_dims: Tuple[int, int], screen_board_scale:
 def show_board(mon: Monitor, board_img: np.array, delay_ms: int):
     y0 = randbelow(mon.height - board_img.shape[0])
     x0 = randbelow(mon.width - board_img.shape[1])
-    imshow("Calibration", board_img, (y0, x0), board_img.shape)
+    imshow("Calibration", board_img, (y0, x0), board_img.shape[:2])
     cv2.waitKey(delay_ms)
 
 
@@ -283,18 +286,16 @@ def calibrate(
 
     print(f"Used {len(objpoints)} valid images for calibration. RMS error: {rms}")
 
-    return {
-        "model": str(cam_model),
-        "dims": dims,
-        "k": k.tolist(),
-        "d": d.tolist(),
-    }
+    return CameraParams(cam_model, dims, k, d)
 
 
 def main():
     args = parse_args()
 
     mon = get_monitors()[args.screen_monitor]
+
+    if args.hyperion_api:
+        Hyperion(args.hyperion_api)
 
     cap = VideoCapture(args.cam_index, (args.cam_res_y, args.cam_res_x), args.cam_fps)
     show_preview(cap, mon, args.screen_preview_scale, args.frame_delay_ms)
@@ -316,9 +317,7 @@ def main():
         args.epsilon_calib,
         args.epsilon_subpix,
     )
-
-    with open(args.output_params_file, "w") as f:
-        json.dump(params, f, indent=2)
+    params.save(args.output_params_file)
 
 
 if __name__ == "__main__":
