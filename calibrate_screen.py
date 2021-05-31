@@ -302,7 +302,7 @@ def show_leds(
         img,
         (y0, x0),
         img.shape[:2],
-        "Press ESC key to cancel, or any other key to update Hyperion",
+        "Press any key to update Hyperion, ESC to cancel",
     )
 
     if cv2.waitKey(0) == 0x1B:

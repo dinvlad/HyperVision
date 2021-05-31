@@ -139,7 +139,7 @@ def imshow(
         cv2.resizeWindow(win_name, size[1], size[0])
 
     if text:
-        cv2.putText(img, text, (5, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        cv2.putText(img, text, (5, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
 
     cv2.imshow(win_name, img)
     return True
