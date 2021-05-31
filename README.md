@@ -66,6 +66,8 @@ Well, here is a simple solution!
 
 7.  That's it! PROFIT (and don't forget to turn on your lights...)
 
+If you later reposition the camera, only re-run step 6 and you're good to watch the lights again!
+
 ## Disclaimer
 
 This is still a work-in-progress. As you can see, LED alignment is not yet OCD-perfect, and some
