@@ -325,6 +325,8 @@ def update_hyperion(
     grabber["cropBottom"] = cam.dims[0] - crop.h - crop.y
     grabber["cropLeft"] = crop.x
 
+    config["device"]["hardwareLedCount"] = len(leds)
+    config["device"]["leds"] = len(leds)
     config["leds"] = [
         {
             "hmin": np.clip((led[0] - crop.x) / crop.w, 0, 1),
