@@ -1,7 +1,7 @@
 # HyperVision
 
-Have you ever dreamt of using your *webcam* with [Hyperion](https://github.com/hyperion-project/hyperion.ng)
-to set up those Ambient LEDs for your monitor?
+Have you ever dreamed of using your *webcam* with [Hyperion](https://github.com/hyperion-project/hyperion.ng)
+to set up those Ambient LED strips for your monitor?
 
 Did you scratch your head on how exactly to do that, given geometric distortions from the camera?
 
@@ -53,7 +53,7 @@ Well, here is a simple solution!
     ```
     (you can also specify the number of LEDs at each edge of the screen etc.)
 
-    As previously, this will show a live preview so you can pick the best spot for the camera.
+    As previously, this will show a live preview, so you can pick the best spot for the camera.
 
     Once you press a key, it will take measurements from a blank screen and offer you the final preview
     of the calculated LED positions with a cropped screen:
