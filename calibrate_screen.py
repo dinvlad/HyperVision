@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+from dataclasses import dataclass
 import sys
 
 import cv2
@@ -156,6 +157,14 @@ def get_blank_frame(mon: Monitor, cap: VideoCapture, wait_ms: int):
     return blank
 
 
+@dataclass
+class Crop:
+    x: int
+    y: int
+    w: int
+    h: int
+
+
 def get_screen_transforms(blank: np.array, cam: CameraParams, cam_alpha: float):
     gray = cv2.cvtColor(blank, cv2.COLOR_BGR2GRAY)
     _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
@@ -163,7 +172,7 @@ def get_screen_transforms(blank: np.array, cam: CameraParams, cam_alpha: float):
     contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     contours.sort(key=cv2.contourArea)
     cnt = contours[-1]
-    crop = cv2.boundingRect(cnt)
+    crop = Crop(*cv2.boundingRect(cnt))
 
     epsilon = 0
     epsilon_inc = 0.001
@@ -209,12 +218,10 @@ def get_screen_transforms(blank: np.array, cam: CameraParams, cam_alpha: float):
 def distort_points(
     cam: CameraParams,
     points: np.array,
-    m: np.array,
-    k: np.array,
-    d: np.array,
+    p_t: np.array,
     new_k_inv: np.array,
 ):
-    perspective_points = cv2.perspectiveTransform(points, m)
+    perspective_points = cv2.perspectiveTransform(points, p_t)
     perspective_points_3d = (
         cv2.convertPointsToHomogeneous(perspective_points).transpose().squeeze()
     )
@@ -245,7 +252,7 @@ def calculate_leds(
     leds = []
 
     def distort(points: list):
-        return distort_points(cam, np.float32(points), p_t, cam.k, cam.d, new_k_inv)
+        return distort_points(cam, np.float32(points), p_t, new_k_inv)
 
     dp = distort([[[i / leds_top, 0]] for i in range(0, leds_top + 1)])
     for i in range(0, len(dp) - 1):
@@ -270,7 +277,13 @@ def calculate_leds(
     return leds
 
 
-def show_leds(mon: Monitor, cap: VideoCapture, leds: np.array, frame_delay_ms: int):
+def show_leds(
+    mon: Monitor,
+    cap: VideoCapture,
+    leds: np.array,
+    crop: Crop,
+    frame_delay_ms: int,
+):
     img = None
     while img is None:
         img = cap.read()
@@ -281,6 +294,8 @@ def show_leds(mon: Monitor, cap: VideoCapture, leds: np.array, frame_delay_ms: i
 
     for p in leds:
         cv2.rectangle(img, np.int32((p[0], p[2])), np.int32((p[1], p[3])), (255, 0, 0))
+
+    img = img[crop.y : crop.y + crop.h, crop.x : crop.x + crop.w, :]
 
     imshow(
         "LED Preview",
@@ -298,28 +313,24 @@ def update_hyperion(
     hyperion: Hyperion,
     cam: CameraParams,
     leds: np.array,
-    crop_x: int,
-    crop_y: int,
-    crop_w: int,
-    crop_h: int,
+    crop: Crop,
 ):
     config = hyperion.get_config()
 
     grabber = config["grabberV4L2"]
     grabber["width"] = cam.dims[1]
     grabber["height"] = cam.dims[0]
-    grabber["cropTop"] = crop_y
-    grabber["cropTop"] = crop_y
-    grabber["cropRight"] = cam.dims[1] - crop_w - crop_x
-    grabber["cropBottom"] = cam.dims[0] - crop_h - crop_y
-    grabber["cropLeft"] = crop_x
+    grabber["cropTop"] = crop.y
+    grabber["cropRight"] = cam.dims[1] - crop.w - crop.x
+    grabber["cropBottom"] = cam.dims[0] - crop.h - crop.y
+    grabber["cropLeft"] = crop.x
 
     config["leds"] = [
         {
-            "hmin": np.clip((led[0] - crop_x) / crop_w, 0, 1),
-            "hmax": np.clip((led[1] - crop_x) / crop_w, 0, 1),
-            "vmin": np.clip((led[2] - crop_y) / crop_h, 0, 1),
-            "vmax": np.clip((led[3] - crop_y) / crop_h, 0, 1),
+            "hmin": np.clip((led[0] - crop.x) / crop.w, 0, 1),
+            "hmax": np.clip((led[1] - crop.x) / crop.w, 0, 1),
+            "vmin": np.clip((led[2] - crop.y) / crop.h, 0, 1),
+            "vmax": np.clip((led[3] - crop.y) / crop.h, 0, 1),
         }
         for led in leds
     ]
@@ -340,12 +351,10 @@ def main():
     show_preview(cap, mon, args.screen_preview_scale, args.frame_preview_delay_ms)
 
     blank = get_blank_frame(mon, cap, args.frame_blank_delay_ms)
-    (crop_x, crop_y, crop_w, crop_h), new_k_inv, p_t = get_screen_transforms(
-        blank, cam, args.cam_alpha
-    )
+    crop, new_k_inv, p_t = get_screen_transforms(blank, cam, args.cam_alpha)
 
-    horiz_led_depth = crop_h * args.led_depth_horiz_pct / 100
-    vert_led_depth = crop_w * args.led_depth_vert_pct / 100
+    horiz_led_depth = crop.h * args.led_depth_horiz_pct / 100
+    vert_led_depth = crop.w * args.led_depth_vert_pct / 100
 
     leds = calculate_leds(
         cam,
@@ -359,8 +368,8 @@ def main():
         vert_led_depth,
     )
 
-    show_leds(mon, cap, leds, args.frame_preview_delay_ms)
-    update_hyperion(hyperion, cam, leds, crop_x, crop_y, crop_w, crop_h)
+    show_leds(mon, cap, leds, crop, args.frame_preview_delay_ms)
+    update_hyperion(hyperion, cam, leds, crop)
 
 
 if __name__ == "__main__":
