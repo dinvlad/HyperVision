@@ -31,7 +31,7 @@ class CameraModel(Enum):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Calibrate a fisheye camera.")
+    parser = argparse.ArgumentParser(description="Calibrate a camera")
     parser.add_argument(
         "-br",
         "--board-rows",
