@@ -14,7 +14,7 @@ Well, here is a simple solution!
 
 ## Setup
 
-0.  Use a computer capable of running Python scripts in graphical mode - this could be your Raspberry Pi 😉
+0.  Use a computer capable of running Python 3 scripts in graphical mode - this could be your Raspberry Pi 😉
 
 1.  Install [Hyperion.NG](https://docs.hyperion-project.org/en/user/Installation.html) - no need to configure it (well almost, see below).
 
@@ -35,7 +35,7 @@ Well, here is a simple solution!
     (for fisheye, add `-cm fisheye` option).
 
     This script will display a live preview from the camera, which should help with positioning.
-    Once you have the entire screen within he field of view, press any key.
+    Once you have the entire screen within the field of view, press any key.
 
     Then, it'll show a [chessboard calibration pattern](https://docs.opencv.org/master/dc/dbb/tutorial_py_calibration.html),
     and measure camera parameters while varying its position on the screen:
