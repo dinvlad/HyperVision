@@ -318,7 +318,9 @@ def update_hyperion(
     config = hyperion.get_config()
 
     if len(leds) > config["device"]["hardwareLedCount"]:
-        raise ValueError("The total number of LEDs must be less than 'Hardware LED count' in Hyperion settings!")
+        raise ValueError(
+            "The total number of LEDs must be less than 'Hardware LED count' in Hyperion settings!"
+        )
 
     config["leds"] = [
         {
@@ -331,11 +333,11 @@ def update_hyperion(
     ]
 
     grabber = config["grabberV4L2"]
-    grabber["width"] = cam.dims[1]
-    grabber["height"] = cam.dims[0]
+    grabber["width"] = cam.dims[0]
+    grabber["height"] = cam.dims[1]
     grabber["cropTop"] = crop.y
-    grabber["cropRight"] = cam.dims[1] - crop.w - crop.x
-    grabber["cropBottom"] = cam.dims[0] - crop.h - crop.y
+    grabber["cropRight"] = cam.dims[0] - crop.w - crop.x
+    grabber["cropBottom"] = cam.dims[1] - crop.h - crop.y
     grabber["cropLeft"] = crop.x
 
     hyperion.set_config(config)
