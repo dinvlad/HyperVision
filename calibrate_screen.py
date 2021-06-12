@@ -226,15 +226,16 @@ def distort_points(
         cv2.convertPointsToHomogeneous(perspective_points).transpose().squeeze()
     )
     perspective_points_3d = np.matmul(new_k_inv, perspective_points_3d)
-    perspective_points = cv2.convertPointsFromHomogeneous(
-        perspective_points_3d.transpose()[None, :, :]
-    )
+
     if cam.model == CameraModel.PINHOLE:
         distorted_points, _ = cv2.projectPoints(
-            perspective_points, np.zeros(3), np.zeros(3), cam.k, cam.d
+            perspective_points_3d, np.zeros(3), np.zeros(3), cam.k, cam.d
         )
         return distorted_points.squeeze()
     elif cam.model == CameraModel.FISHEYE:
+        perspective_points = cv2.convertPointsFromHomogeneous(
+            perspective_points_3d.transpose()[None, :, :]
+        )
         return cv2.fisheye.distortPoints(perspective_points, cam.k, cam.d).squeeze()
 
 
