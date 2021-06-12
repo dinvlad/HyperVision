@@ -189,7 +189,7 @@ def get_screen_transforms(blank: np.array, cam: CameraParams, cam_alpha: float):
     corners = np.float32(corners)
 
     if cam.model == CameraModel.PINHOLE:
-        new_k = cv2.getOptimalNewCameraMatrix(
+        new_k, _ = cv2.getOptimalNewCameraMatrix(
             cam.k,
             cam.d,
             cam.dims,

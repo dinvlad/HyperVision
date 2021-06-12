@@ -89,7 +89,7 @@ class CameraParams:
             data = json.load(f)
             return CameraParams(
                 CameraModel(data["model"]),
-                data["dims"],
+                tuple(data["dims"]),
                 np.array(data["k"]),
                 np.array(data["d"]),
             )
