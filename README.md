@@ -16,11 +16,13 @@ Well, here is a simple solution!
 
 0.  Use a computer capable of running Python 3 scripts in graphical mode - this could be your Raspberry Pi 😉
 
-1.  Install [Hyperion.NG](https://docs.hyperion-project.org/en/user/Installation.html) - no need to configure it (well almost, see below).
+1.  Install [Hyperion.NG](https://docs.hyperion-project.org/en/user/Installation.html) and navigate to its web UI (`http://<server-ip>:8090`).
 
-2.  *Disable* "Local Admin API Authentication" under its *Configuration -> Network Services* - unfortunately,
+2.  *Disable* "Local Admin API Authentication" under *Configuration -> Network Services* in Hyperion Web UI - unfortunately,
     this step is [needed](https://github.com/hyperion-project/hyperion.ng/issues/1251) to control Hyperion from our scripts.
     You can re-enable it later, if you want.
+
+    Also, *disable* "Platform Capture" under *Configuration -> Capturing Hardware*.
 
 3.  Install Python dependencies:
     ```
