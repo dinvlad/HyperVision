@@ -132,6 +132,13 @@ def parse_args():
         help="Percent depth of LED capture area at the left and right of the screen",
     )
     parser.add_argument(
+        "-ls",
+        "--led-start",
+        type=arg_non_neg_int,
+        default=0,
+        help="LED start position",
+    )
+    parser.add_argument(
         "-ha",
         "--hyperion-api",
         type=str,
@@ -271,6 +278,7 @@ def calculate_leds(
     leds_left: int,
     horiz_depth: int,
     vert_depth: int,
+    led_start: int,
 ):
     leds = []
 
@@ -297,7 +305,7 @@ def calculate_leds(
         x = max(dp[i][0], dp[i + 1][0])
         leds.append((x, x + vert_depth, dp[i + 1][1], dp[i][1]))
 
-    return leds
+    return np.roll(leds, -led_start, axis=0)
 
 
 def show_leds(
@@ -401,6 +409,7 @@ def main():
         args.leds_left,
         horiz_led_depth,
         vert_led_depth,
+        args.led_start,
     )
 
     show_leds(mon, cap, leds, crop, args.frame_preview_delay_ms)
