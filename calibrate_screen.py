@@ -165,7 +165,42 @@ class Crop:
     h: int
 
 
-def get_screen_transforms(blank: np.array, cam: CameraParams, cam_alpha: float):
+def get_new_k(cam: CameraParams, cam_alpha: float):
+    if cam.model == CameraModel.PINHOLE:
+        new_k, _ = cv2.getOptimalNewCameraMatrix(
+            cam.k,
+            cam.d,
+            cam.dims,
+            cam_alpha,
+        )
+        return new_k
+    elif cam.model == CameraModel.FISHEYE:
+        return cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(
+            cam.k,
+            cam.d,
+            cam.dims,
+            np.eye(3),
+            balance=cam_alpha,
+        )
+
+
+def undistort_image(cam: CameraParams, new_k: np.array):
+    if cam.model == CameraModel.PINHOLE:
+        return lambda img: img
+    elif cam.model == CameraModel.FISHEYE:
+        map_x, map_y = cv2.fisheye.initUndistortRectifyMap(
+            cam.k, cam.d, np.eye(3), new_k, cam.dims, cv2.CV_16SC2
+        )
+        return lambda img: cv2.remap(
+            img,
+            map_x,
+            map_y,
+            interpolation=cv2.INTER_LINEAR,
+            borderMode=cv2.BORDER_CONSTANT,
+        )
+
+
+def get_screen_transforms(blank: np.array, cam: CameraParams, new_k: np.array):
     gray = cv2.cvtColor(blank, cv2.COLOR_BGR2GRAY)
     _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
 
@@ -189,21 +224,8 @@ def get_screen_transforms(blank: np.array, cam: CameraParams, cam_alpha: float):
     corners = np.float32(corners)
 
     if cam.model == CameraModel.PINHOLE:
-        new_k, _ = cv2.getOptimalNewCameraMatrix(
-            cam.k,
-            cam.d,
-            cam.dims,
-            cam_alpha,
-        )
         undist_points = cv2.undistortPoints
     elif cam.model == CameraModel.FISHEYE:
-        new_k = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(
-            cam.k,
-            cam.d,
-            cam.dims,
-            np.eye(3),
-            balance=cam_alpha,
-        )
         undist_points = cv2.fisheye.undistortPoints
 
     new_k_inv = np.linalg.inv(new_k)
@@ -354,10 +376,17 @@ def main():
         hyperion = Hyperion(args.hyperion_api)
 
     cap = VideoCapture(args.cam_index, cam.dims[::-1], args.cam_fps)
-    show_preview(cap, mon, args.screen_preview_scale, args.frame_preview_delay_ms)
+    new_k = get_new_k(cam, args.cam_alpha)
+    show_preview(
+        cap,
+        mon,
+        args.screen_preview_scale,
+        args.frame_preview_delay_ms,
+        undistort_image(cam, new_k),
+    )
 
     blank = get_blank_frame(mon, cap, args.frame_blank_delay_ms)
-    crop, new_k_inv, p_t = get_screen_transforms(blank, cam, args.cam_alpha)
+    crop, new_k_inv, p_t = get_screen_transforms(blank, cam, new_k)
 
     horiz_led_depth = crop.h * args.led_depth_horiz_pct / 100
     vert_led_depth = crop.w * args.led_depth_vert_pct / 100

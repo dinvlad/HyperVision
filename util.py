@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from enum import Enum
 from threading import Thread
 from time import sleep
-from typing import Optional, Tuple
+from typing import Callable, Optional, Tuple
 
 import cv2
 import numpy as np
@@ -150,6 +150,7 @@ def show_preview(
     mon: Monitor,
     scale: float,
     frame_delay_ms: int,
+    transform: Callable[[np.array], np.array] = lambda img: img,
 ):
     win_name = "Preview"
 
@@ -163,6 +164,8 @@ def show_preview(
         img = cap.read()
         if img is None:
             continue
+
+        img = transform(img)
 
         height = round(img.shape[0] * width / img.shape[1])
         y0 = round((mon.height - height) / 2)
